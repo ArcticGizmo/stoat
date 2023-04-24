@@ -24,19 +24,27 @@ defmodule Example.Aggregates.User do
   end
 
   def login(%Stoat.Aggregate{} = agg) do
-    event = %UserLoggedIn{
-      id: agg.id
-    }
+    if agg.state.is_logged_in do
+      agg
+    else
+      event = %UserLoggedIn{
+        id: agg.id
+      }
 
-    build(agg, event)
+      build(agg, event)
+    end
   end
 
   def logout(%Stoat.Aggregate{} = agg) do
-    event = %UserLoggedOut{
-      id: agg.id
-    }
+    if !agg.state.is_logged_in do
+      agg
+    else
+      event = %UserLoggedOut{
+        id: agg.id
+      }
 
-    build(agg, event)
+      build(agg, event)
+    end
   end
 
   # aggregate builder path

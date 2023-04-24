@@ -1,9 +1,10 @@
 defmodule Example do
   alias Example.Aggregates.User
+  alias Example.Projections.UserCount
 
   def commit(agg), do: Stoat.Persistence.InMemory.commit(agg)
 
-  def load_user(id), do: Stoat.Persistence.InMemory.load(User, id)
+  def load_user(id), do: Stoat.Persistence.InMemory.load_aggregate(User, id)
 
   def test_user() do
     User.create("Jon", "Doe")
@@ -25,6 +26,7 @@ defmodule Example do
     user_2 =
       User.create("User 2", "lastname")
       |> User.login()
+      |> User.logout()
 
     log("User 1 committed")
 
@@ -40,6 +42,10 @@ defmodule Example do
 
     log("Load copy of user 1")
     user_1_copy = load_user(user_1.id)
+  end
+
+  def load_user_count() do
+    Stoat.Persistence.InMemory.load_projection(UserCount)
   end
 
   defp log(msg), do: IO.puts("======= #{msg} =======")
