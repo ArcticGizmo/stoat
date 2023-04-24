@@ -1,18 +1,5 @@
 defmodule Stoat do
-  @moduledoc """
-  Documentation for `Stoat`.
-  """
 
-  @doc """
-  Hello world.
+  def uuid(), do: UUID.uuid1()
 
-  ## Examples
-
-      iex> Stoat.hello()
-      :world
-
-  """
-  def hello do
-    :world
-  end
 end

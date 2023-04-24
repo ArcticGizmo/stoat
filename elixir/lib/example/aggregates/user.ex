@@ -1,0 +1,81 @@
+defmodule Example.Aggregates.User do
+  alias Example.Events.User.{UserCreated, UserLoggedIn, UserLoggedOut, UserDeleted}
+
+  use TypedStruct
+
+  # This defines how units of state are generated
+
+  typedstruct enforce: true do
+    field :id, String.t()
+    field :first_name, String.t()
+    field :last_name, String.t()
+    field :is_logged_in, boolean
+  end
+
+  # commands
+  def create(first_name, last_name) do
+    event = %UserCreated{
+      id: Stoat.uuid(),
+      first_name: first_name,
+      last_name: last_name
+    }
+
+    build(nil, event)
+  end
+
+  def login(%Stoat.Aggregate{} = agg) do
+    event = %UserLoggedIn{
+      id: agg.id
+    }
+
+    build(agg, event)
+  end
+
+  def logout(%Stoat.Aggregate{} = agg) do
+    event = %UserLoggedOut{
+      id: agg.id
+    }
+
+    build(agg, event)
+  end
+
+  # aggregate builder path
+
+  def build(nil, %UserCreated{} = event) do
+    state = %__MODULE__{
+      id: event.id,
+      first_name: event.first_name,
+      last_name: event.last_name,
+      is_logged_in: false
+    }
+
+    %Stoat.Aggregate{
+      id: state.id,
+      state: state,
+      is_deleted: false,
+      events: [event]
+    }
+  end
+
+  def build(agg, %UserLoggedIn{} = event) do
+    state = Map.put(agg.state, :is_logged_in, true)
+
+    agg
+    |> Map.put(:state, state)
+    |> Map.update!(:events, &[event | &1])
+  end
+
+  def build(agg, %UserLoggedOut{} = event) do
+    state = Map.put(agg.state, :is_logged_in, false)
+
+    agg
+    |> Map.put(:state, state)
+    |> Map.update!(:events, &[event | &1])
+  end
+
+  def build(agg, %UserDeleted{} = event) do
+    agg
+    |> Map.put(:is_deleted, true)
+    |> Map.update!(:events, &[event | &1])
+  end
+end
