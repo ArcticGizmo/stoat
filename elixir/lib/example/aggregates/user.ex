@@ -77,6 +77,7 @@ defmodule Example.Aggregates.User do
       id: state.id,
       state: state,
       is_deleted: false,
+      sequence: 0,
       events: [event]
     }
   end
