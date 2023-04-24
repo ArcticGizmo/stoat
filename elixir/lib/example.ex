@@ -1,6 +1,7 @@
 defmodule Example do
   alias Example.Aggregates.User
-  alias Example.Projections.UserCount
+  alias Example.Projections.Multi.UserCount
+  alias Example.Projections.Single.UserNameHistory
 
   def commit(agg), do: Stoat.Persistence.InMemory.commit(agg)
 
@@ -9,6 +10,7 @@ defmodule Example do
   def test_user() do
     User.create("Jon", "Doe")
     |> User.login()
+    |> User.change_name("Jon", "Donut")
     |> User.login()
     |> User.logout()
     |> User.login()
@@ -41,11 +43,24 @@ defmodule Example do
       |> IO.inspect()
 
     log("Load copy of user 1")
-    user_1_copy = load_user(user_1.id)
+    load_user(user_1.id) |> IO.inspect()
+
+    log("Load user count projection")
+    load_user_count() |> IO.inspect()
+
+    log("load user name histories")
+    load_user_name_history(user_1.id) |> IO.inspect()
+    load_user_name_history(user_2.id) |> IO.inspect()
+
+    %{user_1_id: user_1.id, user_2_id: user_2.id}
   end
 
   def load_user_count() do
     Stoat.Persistence.InMemory.load_projection(UserCount)
+  end
+
+  def load_user_name_history(id) do
+    Stoat.Persistence.InMemory.load_projection(UserNameHistory, id)
   end
 
   defp log(msg), do: IO.puts("======= #{msg} =======")

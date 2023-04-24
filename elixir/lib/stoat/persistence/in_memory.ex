@@ -25,6 +25,15 @@ defmodule Stoat.Persistence.InMemory do
     end)
   end
 
+  @spec load_projection(module, String.t()) :: Stoat.Projection.t()
+  def load_projection(module, id) do
+    id
+    |> fetch_events()
+    |> Enum.reduce(nil, fn event, proj ->
+      apply(module, :build, [proj, event])
+    end)
+  end
+
   @spec commit(Stoat.Aggregate.t()) :: Stoat.Aggregate.t()
   def commit(%Stoat.Aggregate{} = agg) do
     events = Enum.reverse(agg.events)

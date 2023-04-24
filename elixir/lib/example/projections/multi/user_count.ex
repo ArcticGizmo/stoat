@@ -1,9 +1,8 @@
-defmodule Example.Projections.UserCount do
+defmodule Example.Projections.Multi.UserCount do
   alias Example.Events.User
   use TypedStruct
 
   # this is an example of a multi_stream projection
-  # TODO: add event_stats to see how many events were used. or how old it is
 
   typedstruct enforce: true do
     field :users, integer

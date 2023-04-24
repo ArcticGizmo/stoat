@@ -1,5 +1,11 @@
 defmodule Example.Aggregates.User do
-  alias Example.Events.User.{UserCreated, UserLoggedIn, UserLoggedOut, UserDeleted}
+  alias Example.Events.User.{
+    UserCreated,
+    UserLoggedIn,
+    UserLoggedOut,
+    UserNameChanged,
+    UserDeleted
+  }
 
   use TypedStruct
 
@@ -21,6 +27,16 @@ defmodule Example.Aggregates.User do
     }
 
     build(nil, event)
+  end
+
+  def change_name(%Stoat.Aggregate{} = agg, first_name, last_name) do
+    event = %UserNameChanged{
+      id: agg.id,
+      first_name: first_name,
+      last_name: last_name
+    }
+
+    build(agg, event)
   end
 
   def login(%Stoat.Aggregate{} = agg) do
@@ -63,6 +79,16 @@ defmodule Example.Aggregates.User do
       is_deleted: false,
       events: [event]
     }
+  end
+
+  def build(agg, %UserNameChanged{} = event) do
+    state = agg.state
+    |> Map.put(:first_name, event.first_name)
+    |> Map.put(:last_name, event.last_name)
+
+    agg
+    |> Map.put(:state, state)
+    |> Map.update!(:events, &[event | &1])
   end
 
   def build(agg, %UserLoggedIn{} = event) do
